@@ -1,47 +1,53 @@
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
 
 header = st.container()
-dataset = st.container()
-model = st.container()
-jk = st.container()
+data_input = st.container()
+result_part = st.container()
+
+
+
 
 with header:
     st.title('Dovolenkář')
-    st.text('vítejte u dovolenkáře')
+    st.markdown('Aplikace pro načasování dovolené s ohledem na očekávané pracovní vytížení')
 
-with dataset:
-    st.header('2. část')
-    st.text('další informace')
+with data_input:
+    st.header('Zadání informací')
+
+    #1. promenna
+    year = int(st.selectbox('Začínáme! Nejprve si vyber potřebný rok:', options = ['2022', '2023', '2024', '2025']))
     
-    st.subheader('Ukázka tabulky')
-    data = pd.read_csv('Pracovni_dny.csv')
-    st.write(data.head(10))
-    #pocty_dnu = pd.DataFrame(data['Pracovni_den'].value_counts()).head(50)
-    #st.bar_chart(pocty_dnu)
+    #2. promenna
+    days_off_no = st.slider('Zadej celkový počet dnů:', min_value = 1, max_value = 25, value=20, step=1)
 
-with model:
-    st.header('3. část')
-    st.markdown('* **First feature:** I create')
-
-    prvni_sl, druhy_sl = st.columns(2)
-
-    year = int(prvni_sl.radio('Rok dovolené:', ["2022", '2023', '2024','2025']))
-    
-    days_off_no = prvni_sl.slider('Kolik dnů dovolené máš:', min_value = 1, max_value = 25, value=20, step=1)
-
+    #3. promenna
     weeklist = []
     week = int((days_off_no - (days_off_no % 5))/5)
     for i in range(week+1):
         weeklist.append(i)
+    whole_week_no = st.selectbox('Zvol si počet celých týdnů (vždy po 5 pracovních dnech) pro lepší regeneraci:', options=weeklist, index = 0)
+    
+    #4. promenna
+    days_rest = days_off_no - whole_week_no
+    
+    #5. promenna
+    mode = st.radio('Už zbývá jen mód. S módem 1 se vyhneš okurkové sezóně, mód 2 tě uchrání před nejvytíženějšími dny:', ['Mód 1','Mód 2'])
 
-    whole_week_no = prvni_sl.selectbox('Kolik týdnů dovolené potřenuješ v kuse', options=weeklist, index = 0)
+with result_part:
+    st.header('Výsledek')
+    st.markdown('A je to! Ideální týdny a dny jsou připraveny. Neváhej a zabookuj si je, dokud jsou termíny volné.')
+    
+    tab_1, tab_2 = st.columns(2)
 
+    tab_1.markdown('**Přehled týdnů:**')
+    #tab_1.write(data.head(10))
 
-    mode = prvni_sl.radio('zvol si mod:', ['Mod1', 'Mod2', 'Mod3"'])
+    tab_2.markdown('**Přehled dnů:**')
+    #tab_2.write(pd.head(12))
 
-with jk:
-    st.header('4. část')
-    st.text('halo, haloi hahahaha ahahaha ahahaha ahaha ahaha ahaha ahjaa \n djjdjdjd\n shshshshs')
-
+    
+    #pocty_dnu = pd.DataFrame(data['Pracovni_den'].value_counts()).head(50)
+    #st.bar_chart(pocty_dnu)
     
