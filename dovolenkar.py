@@ -1,9 +1,8 @@
-from asyncio.windows_events import NULL
 import pandas as pd
 import streamlit as st
 import pyodbc
-import matplotlib.pyplot as plt
 import plotly.graph_objects as go
+#import matplotlib.pyplot as plt
 
 conn = pyodbc.connect(
     'Driver={SQL Server};'
@@ -111,80 +110,79 @@ with result_part:
     st.header('Výsledek')
     st.markdown('A je to! Ideální týdny a dny jsou připraveny. Neváhej a zabookuj si je, dokud jsou termíny volné.')
     
+    #zobrazení tabulek
     tab_1, tab_2 = st.columns(2)
-
     tab_1.markdown('**Přehled týdnů:**')
     if df_result_week.empty:
         fig = go.Figure(data=[go.Table(
-        header=dict(values=['Datum', 'Týden'],
+            header=dict(values=['Datum', 'Týden'],
                 fill_color='paleturquoise',
                 align='left'),
-        cells=dict(values=[0, 0],
+            cells=dict(values=[0, 0],
                fill_color='lavender',
                align='left'))
                ])
-        fig.update_layout(width=380, height=300, margin=dict(
-            l=0,
-            r=50,
-            b=0,
-            t=0
-            )
-        )
+        fig.update_layout(width=380, height=300, margin=dict(l=0,r=50,b=0,t=0))
     else:
         fig = go.Figure(data=[go.Table(
             header=dict(values=['Datum', 'Týden'],
-                    fill_color='paleturquoise',
-                    align='left'),
-
+                fill_color='paleturquoise',
+                align='left'),
             cells=dict(values=[df_result_week['Datum'].dt.strftime('%d/%m/%y'), df_result_week['Week_no']],
                 fill_color='lavender',
                 align='left'))
         ])
-        fig.update_layout(width=380, height=300, margin=dict(
-            l=0,
-            r=50,
-            b=0,
-            t=0
-            )
-        )
+        fig.update_layout(width=380, height=300, margin=dict(l=0,r=50,b=0,t=0))
     tab_1.write(fig)
 
     tab_2.markdown('**Přehled dnů:**')
     if df_result_days.empty:
         fig = go.Figure(data=[go.Table(
-        header=dict(values=['Datum', 'Týden'],
+            header=dict(values=['Datum', 'Týden'],
                 fill_color='paleturquoise',
                 align='left'),
-        cells=dict(values=[0, 0],
+            cells=dict(values=[0, 0],
                fill_color='lavender',
                align='left'))
                ])
-        fig.update_layout(width=380, height=300, margin=dict(
-            l=0,
-            r=50,
-            b=0,
-            t=0
-            )
-        )
-
+        fig.update_layout(width=380, height=300, margin=dict(l=0,r=50,b=0,t=0))    
     else:
         fig = go.Figure(data=[go.Table(
             header=dict(values=['Datum', 'Týden'],
-                    fill_color='paleturquoise',
-                    align='left'),
-
+                fill_color='paleturquoise',
+                align='left'),
             cells=dict(values=[df_result_days['Datum'].dt.strftime('%d/%m/%y'), df_result_days['Week_no']],
                 fill_color='lavender',
                 align='left'))
         ])
-        fig.update_layout(width=380, height=300, margin=dict(
-            l=0,
-            r=50,
-            b=0,
-            t=0
-            ) 
-        )
+        fig.update_layout(width=380, height=300, margin=dict(l=0,r=50,b=0,t=0))
     tab_2.write(fig)
 
+    #zobrazení grafu
+    colors = ['darkgrey',] * 52
+    if df_result_week.empty:
+        go_week = 0
+    else:
+        go_week = df_result_week['Week_no'].unique().tolist()
+        for i in range(len(go_week)):
+            colors[go_week[i]-1] = 'crimson'
+    if df_result_days.empty:
+        go_days = 0
+    else:
+        go_days = df_result_days['Week_no'].unique().tolist()
+        for i in range(len(go_days)):
+            colors[go_days[i]-1] = 'lightpink'
 
-    
+    fig_chart = go.Figure(data=[go.Bar(
+        x=df_final_week.index.values.tolist(),
+        y=df_final_week['Shipments_no'].tolist(),
+        marker_color=colors,
+        text = df_final_week['Shipments_no'].astype(int).tolist(),
+        textposition='outside'
+    )])
+    fig_chart.update_layout(
+        title_text='Least Used Feature', 
+        width=1000, 
+        height=500,
+        margin=dict(l=0,r=0,b=0,t=50))
+    st.write(fig_chart)
