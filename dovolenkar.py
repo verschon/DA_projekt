@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 import pandas as pd
 import streamlit as st
 import pyodbc
@@ -21,6 +22,7 @@ df_shipments = df_shipments.groupby('Processing_date')[['Shipments_no']].count()
 df_shipments['Month/day'] = df_shipments['Processing_date'].dt.strftime('%m/%d')
 df_shipments = df_shipments.groupby('Month/day')[['Shipments_no']].mean().round(2).reset_index()
 
+
 header = st.container()
 data_input = st.container()
 result_part = st.container()
@@ -41,8 +43,9 @@ with data_input:
     df_wd_year = df_working_days[(df_working_days['Year'] == year)]
 
     df_final_day = pd.merge(df_wd_year, df_shipments, on=['Month/day'])
+    
     df_final_week = df_final_day.groupby('Week_no')[['Shipments_no']].mean().round(2)
-
+    
     #vyselektování kompletních týdnů v roce
     week_count = df_final_day['Week_no'].value_counts().sort_index()
     df_final_wholeweek = df_final_week.assign(Week_count = week_count)
@@ -81,10 +84,11 @@ with data_input:
             df_final_day_copy.drop(df_final_day_copy[df_final_day_copy['Week_no'] == result_week].index, inplace = True)
             df1 = df_final_day[(df_final_day['Week_no'] == result_week)][['Datum', 'Week_no']]
             df_result_week = pd.concat([df_result_week, df1], ignore_index = True).sort_values(by='Datum')
-
+    
+    
     #urceni dnů - vysledne df
     df_result_days = pd.DataFrame()
-    days_rest = days_off_no - whole_week_no
+    days_rest = days_off_no - (whole_week_no*5)
 
     for i in range(days_rest):
         if mode =='Mód 1':
@@ -110,7 +114,77 @@ with result_part:
     tab_1, tab_2 = st.columns(2)
 
     tab_1.markdown('**Přehled týdnů:**')
-    #tab_1.write(data.head(10))
+    if df_result_week.empty:
+        fig = go.Figure(data=[go.Table(
+        header=dict(values=['Datum', 'Týden'],
+                fill_color='paleturquoise',
+                align='left'),
+        cells=dict(values=[0, 0],
+               fill_color='lavender',
+               align='left'))
+               ])
+        fig.update_layout(width=380, height=300, margin=dict(
+            l=0,
+            r=50,
+            b=0,
+            t=0
+            )
+        )
+    else:
+        fig = go.Figure(data=[go.Table(
+            header=dict(values=['Datum', 'Týden'],
+                    fill_color='paleturquoise',
+                    align='left'),
+
+            cells=dict(values=[df_result_week['Datum'].dt.strftime('%d/%m/%y'), df_result_week['Week_no']],
+                fill_color='lavender',
+                align='left'))
+        ])
+        fig.update_layout(width=380, height=300, margin=dict(
+            l=0,
+            r=50,
+            b=0,
+            t=0
+            )
+        )
+    tab_1.write(fig)
 
     tab_2.markdown('**Přehled dnů:**')
-    #tab_2.write(pd.head(12))
+    if df_result_days.empty:
+        fig = go.Figure(data=[go.Table(
+        header=dict(values=['Datum', 'Týden'],
+                fill_color='paleturquoise',
+                align='left'),
+        cells=dict(values=[0, 0],
+               fill_color='lavender',
+               align='left'))
+               ])
+        fig.update_layout(width=380, height=300, margin=dict(
+            l=0,
+            r=50,
+            b=0,
+            t=0
+            )
+        )
+
+    else:
+        fig = go.Figure(data=[go.Table(
+            header=dict(values=['Datum', 'Týden'],
+                    fill_color='paleturquoise',
+                    align='left'),
+
+            cells=dict(values=[df_result_days['Datum'].dt.strftime('%d/%m/%y'), df_result_days['Week_no']],
+                fill_color='lavender',
+                align='left'))
+        ])
+        fig.update_layout(width=380, height=300, margin=dict(
+            l=0,
+            r=50,
+            b=0,
+            t=0
+            ) 
+        )
+    tab_2.write(fig)
+
+
+    
