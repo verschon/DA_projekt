@@ -58,7 +58,7 @@ with data_input:
     week = int((days_off_no - (days_off_no % 5))/5)
     for i in range(week+1):
         weeklist.append(i)
-    whole_week_no = st.selectbox('Zvol si počet celých týdnů (vždy po 5 pracovních dnech) pro lepší regeneraci:', options=weeklist, index = 0)
+    whole_week_no = st.selectbox('Zvol si počet celých týdnů tzn. 5 pracovních dnů od pondělí do pátku pro delší regeneraci:', options=weeklist, index = 0)
     
     #4. input
     mode = st.radio('Už zbývá jen mód. S módem 1 se vyhneš okurkové sezóně, mód 2 tě uchrání před nejvytíženějšími dny:', ['Mód 1','Mód 2'])
@@ -112,60 +112,65 @@ with result_part:
     
     #zobrazení tabulek
     tab_1, tab_2 = st.columns(2)
-    tab_1.markdown('**Přehled týdnů:**')
+    tab_1.markdown('**Seznam celých týdnů:**')
     if df_result_week.empty:
         fig = go.Figure(data=[go.Table(
-            header=dict(values=['Datum', 'Týden'],
-                fill_color='paleturquoise',
+            header=dict(values=[['<b>Datum</b>'], ['<b>Týden</b>']],
+                font=dict(color='white',size=12),
+                fill_color='red',
                 align='left'),
             cells=dict(values=[0, 0],
-               fill_color='lavender',
+               fill_color='ghostwhite',
                align='left'))
                ])
-        fig.update_layout(width=380, height=300, margin=dict(l=0,r=50,b=0,t=0))
+        fig.update_layout(width=400, height=300, margin=dict(l=0,r=50,b=0,t=0))
     else:
         fig = go.Figure(data=[go.Table(
-            header=dict(values=['Datum', 'Týden'],
-                fill_color='paleturquoise',
+            header=dict(values=[['<b>Datum</b>'], ['<b>Týden</b>']],
+                font=dict(color='white',size=12),
+                fill_color='red',
                 align='left'),
             cells=dict(values=[df_result_week['Datum'].dt.strftime('%d/%m/%y'), df_result_week['Week_no']],
-                fill_color='lavender',
+                fill_color='ghostwhite',
                 align='left'))
         ])
-        fig.update_layout(width=380, height=300, margin=dict(l=0,r=50,b=0,t=0))
+        fig.update_layout(width=400, height=300, margin=dict(l=0,r=50,b=0,t=0))
     tab_1.write(fig)
 
-    tab_2.markdown('**Přehled dnů:**')
+    tab_2.markdown('**Seznam jednotlivých dnů:**')
     if df_result_days.empty:
         fig = go.Figure(data=[go.Table(
-            header=dict(values=['Datum', 'Týden'],
-                fill_color='paleturquoise',
+            header=dict(values=[['<b>Datum</b>'], ['<b>Týden</b>']],
+                font=dict(color='white',size=12),
+                fill_color='lightpink',
                 align='left'),
             cells=dict(values=[0, 0],
-               fill_color='lavender',
+               fill_color='ghostwhite',
                align='left'))
                ])
-        fig.update_layout(width=380, height=300, margin=dict(l=0,r=50,b=0,t=0))    
+        fig.update_layout(width=350, height=300, margin=dict(l=0,r=0,b=0,t=0))    
     else:
         fig = go.Figure(data=[go.Table(
-            header=dict(values=['Datum', 'Týden'],
-                fill_color='paleturquoise',
+            header=dict(values=[['<b>Datum</b>'], ['<b>Týden</b>']],
+                font=dict(color='white',size=12),
+                fill_color='lightpink',
                 align='left'),
             cells=dict(values=[df_result_days['Datum'].dt.strftime('%d/%m/%y'), df_result_days['Week_no']],
-                fill_color='lavender',
+                fill_color='ghostwhite',
                 align='left'))
         ])
-        fig.update_layout(width=380, height=300, margin=dict(l=0,r=50,b=0,t=0))
+        fig.update_layout(width=350, height=300, margin=dict(l=0,r=0,b=0,t=0))
     tab_2.write(fig)
 
     #zobrazení grafu
+    st.markdown('**Přehled vybraných termínů v roce:**')
     colors = ['darkgrey',] * 52
     if df_result_week.empty:
         go_week = 0
     else:
         go_week = df_result_week['Week_no'].unique().tolist()
         for i in range(len(go_week)):
-            colors[go_week[i]-1] = 'crimson'
+            colors[go_week[i]-1] = 'red'
     if df_result_days.empty:
         go_days = 0
     else:
@@ -178,11 +183,11 @@ with result_part:
         y=df_final_week['Shipments_no'].tolist(),
         marker_color=colors,
         text = df_final_week['Shipments_no'].astype(int).tolist(),
-        textposition='outside'
+        textposition='outside',
     )])
-    fig_chart.update_layout(
-        title_text='Least Used Feature', 
-        width=1000, 
-        height=500,
-        margin=dict(l=0,r=0,b=0,t=50))
+    fig_chart.update_xaxes(tickmode='linear')
+    fig_chart.update_layout(width=1000,height=500, margin=dict(l=0,r=0,b=0,t=0),
+        xaxis=dict(title='Číslo týdne',titlefont_size=16),
+        yaxis=dict(title='Počet zásilek',titlefont_size=16),
+    )
     st.write(fig_chart)
